@@ -1,0 +1,31 @@
+@import "tailwindcss";
+
+@theme {
+  --color-greek-blue: #005A9C;
+  --color-greek-white: #FFFFFF;
+  --color-greek-light-blue: #E1F5FE;
+  
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Playfair Display", serif;
+}
+
+@layer base {
+  body {
+    @apply bg-greek-white text-slate-900 antialiased;
+    font-family: var(--font-sans);
+  }
+  
+  h1, h2, h3 {
+    font-family: var(--font-serif);
+  }
+}
+
+.menu-item-border {
+  border-bottom: 1px dashed theme('colors.slate.200');
+}
+
+.greek-pattern {
+  background-image: radial-gradient(circle at 2px 2px, theme('colors.greek-blue') 1px, transparent 0);
+  background-size: 24px 24px;
+  opacity: 0.05;
+}
