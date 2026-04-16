@@ -4,6 +4,7 @@ import { Utensils, Coffee, Info, MapPin, Phone, Instagram, ChevronRight, Menu as
 import { MENU_DATA } from './constants';
 import { MenuCategory, CartItem, MenuItem } from './types';
 import { supabase } from './supabase';
+import { AIWaiter } from './components/AIWaiter';
 
 const RESTAURANT_PHONE = '966567107510';
 
@@ -474,6 +475,9 @@ export default function App() {
           </button>
         </motion.div>
       )}
+
+      {/* AI Marketing Assistant */}
+      <AIWaiter />
     </div>
   );
 }
