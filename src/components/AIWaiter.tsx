@@ -1,32 +1,18 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Mic, MicOff, X, Volume2, Bot, Loader2, Play } from 'lucide-react';
+import { Mic, MicOff, X, Volume2, Bot, Loader2, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { getAIWaiterResponse } from '../services/aiService';
 
-interface Message {
-  role: 'user' | 'model';
-  text: string;
-}
-
 export const AIWaiter: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [messages, setMessages] = useState<Message[]>([
-    { role: 'model', text: 'أهلاً بك في مطعم نداء! اضغط على الميكروفون وتحدث معي، سأقوم بمساعدتك في اختيار أشهى الأطباق اليوم.' }
-  ]);
   const [isLoading, setIsLoading] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [statusText, setStatusText] = useState('هلا بك في نداء.. نورتنا!');
   const [transcription, setTranscription] = useState('');
-  const messagesEndRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<any>(null);
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages, transcription]);
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
 
   useEffect(() => {
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
@@ -50,27 +36,34 @@ export const AIWaiter: React.FC = () => {
 
       recognitionRef.current.onend = () => {
         setIsListening(false);
+        if (!isLoading) setTranscription('');
       };
 
       recognitionRef.current.onerror = (event: any) => {
         console.error('Speech recognition error:', event.error);
         setIsListening(false);
+        setStatusText('ما سمعتك زين.. جرب مرة ثانية؟');
       };
     }
-  }, []);
+  }, [isLoading]);
 
   const speak = (text: string) => {
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
     const voices = window.speechSynthesis.getVoices();
-    // Prioritize Arabic voices
     const arVoice = voices.find(v => v.lang.startsWith('ar')) || voices.find(v => v.lang.includes('ar')) || voices[0];
     if (arVoice) utterance.voice = arVoice;
-    utterance.rate = 1.0;
-    utterance.pitch = 1.1; // Slightly higher pitch for a friendly service tone
+    utterance.rate = 1.1; // Friendly fast pace
+    utterance.pitch = 1.1; 
     
-    utterance.onstart = () => setIsSpeaking(true);
-    utterance.onend = () => setIsSpeaking(false);
+    utterance.onstart = () => {
+      setIsSpeaking(true);
+      setStatusText(text);
+    };
+    utterance.onend = () => {
+      setIsSpeaking(false);
+      setStatusText('أنا معك.. وش تبي تطلب بعد؟');
+    };
     window.speechSynthesis.speak(utterance);
   };
 
@@ -80,6 +73,7 @@ export const AIWaiter: React.FC = () => {
     } else {
       window.speechSynthesis.cancel();
       setTranscription('');
+      setStatusText('أسمعك.. سمّ يا بعدي');
       try {
         recognitionRef.current?.start();
         setIsListening(true);
@@ -92,207 +86,205 @@ export const AIWaiter: React.FC = () => {
   const handleVoiceInput = async (text: string) => {
     if (!text.trim() || isLoading) return;
 
-    setMessages(prev => [...prev, { role: 'user', text }]);
-    setTranscription('');
     setIsLoading(true);
+    setStatusText('ثواني بس.. أشوف لك أفضل شي');
 
-    const history = messages.map(m => ({
-      role: m.role,
-      parts: [{ text: m.text }]
-    }));
-
-    const response = await getAIWaiterResponse(text, history);
-    setMessages(prev => [...prev, { role: 'model', text: response }]);
+    // We only send the latest message for a clean voice-first UX, 
+    // but we could maintain session state if needed.
+    const response = await getAIWaiterResponse(text, []);
     setIsLoading(false);
     speak(response);
   };
 
   return (
-    <div className="fixed bottom-24 right-6 z-[100] flex flex-col items-end">
+    <div className="fixed inset-x-0 bottom-0 z-[100] flex flex-col items-center">
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, y: 20, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 20, scale: 0.95 }}
-            className="mb-4 w-[90vw] max-w-[420px] h-[580px] bg-white rounded-[2rem] shadow-2xl border border-greek-light-blue overflow-hidden flex flex-col"
+            initial={{ y: "100%" }}
+            animate={{ y: 0 }}
+            exit={{ y: "100%" }}
+            transition={{ type: "spring", damping: 25, stiffness: 200 }}
+            className="w-full h-[60vh] bg-greek-blue text-white rounded-t-[3rem] shadow-[0_-20px_50px_rgba(0,40,85,0.3)] flex flex-col items-center justify-between p-8 relative overflow-hidden"
           >
-            {/* Header */}
-            <div className="bg-greek-blue p-6 flex justify-between items-center text-white">
-              <div className="flex items-center gap-4">
-                <div className={`w-14 h-14 rounded-full flex items-center justify-center transition-all duration-500 ${isSpeaking ? 'bg-white text-greek-blue scale-110 shadow-[0_0_20px_rgba(255,255,255,0.6)]' : 'bg-white/20 text-white'}`}>
-                  {isSpeaking ? <Volume2 className="animate-pulse" size={32} /> : <Bot size={32} />}
-                </div>
-                <div>
-                  <h3 className="font-bold text-xl">نِداء الذكي (صوتي)</h3>
-                  <p className="text-sm text-greek-light-blue font-light">تحدث معي، أنا أسمعك..</p>
-                </div>
-              </div>
-              <button 
-                onClick={() => {
-                  setIsOpen(false);
-                  window.speechSynthesis.cancel();
-                  recognitionRef.current?.stop();
-                }}
-                className="hover:bg-white/10 p-2 rounded-full transition-colors"
-              >
-                <X size={28} />
-              </button>
+            {/* Background Decorative Elements */}
+            <div className="absolute inset-0 opacity-20 pointer-events-none">
+              <div className="absolute top-20 left-10 w-64 h-64 bg-white/10 rounded-full blur-3xl animate-pulse" />
+              <div className="absolute bottom-20 right-10 w-64 h-64 bg-greek-light-blue/20 rounded-full blur-3xl animate-pulse delay-700" />
             </div>
 
-            {/* AI Experience Stage */}
-            <div className="h-44 bg-greek-blue flex flex-col items-center justify-center gap-4 relative overflow-hidden shadow-inner">
-               <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle,white_1px,transparent_1px)] bg-[size:25px_25px]" />
-               
-               {/* Listening Animation */}
-               <AnimatePresence>
-                 {isListening && (
-                    <motion.div 
-                      initial={{ opacity: 0 }} 
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      className="flex items-end gap-1.5 h-16"
-                    >
-                      {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(i => (
-                        <motion.div
-                          key={i}
-                          animate={{ height: [12, 48, 16, 60, 20] }}
-                          transition={{ repeat: Infinity, duration: 0.5, delay: i * 0.05 }}
-                          className="w-2 bg-white rounded-full shadow-sm"
-                        />
-                      ))}
-                    </motion.div>
-                 )}
-               </AnimatePresence>
+            {/* Header / Close */}
+            <div className="w-full flex justify-between items-center z-10">
+               <div className="flex items-center gap-2">
+                 <Bot size={20} className="text-greek-light-blue" />
+                 <span className="text-xs font-bold tracking-widest uppercase opacity-60">نِداء الذكي | Voice Assistant</span>
+               </div>
+               <button 
+                 onClick={() => {
+                   setIsOpen(false);
+                   window.speechSynthesis.cancel();
+                   recognitionRef.current?.stop();
+                 }}
+                 className="bg-white/10 hover:bg-white/20 p-3 rounded-full transition-all"
+               >
+                 <X size={24} />
+               </button>
+            </div>
 
-               {/* Speaking Animation */}
-               <AnimatePresence>
-                 {isSpeaking && (
-                    <motion.div 
-                      initial={{ opacity: 0 }} 
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      className="flex items-center gap-2 h-16"
-                    >
-                       {[1, 2, 3, 4, 5].map(i => (
-                        <motion.div
-                          key={i}
-                          animate={{ 
-                            scale: [1, 1.8, 1],
-                            opacity: [0.5, 1, 0.5]
-                          }}
-                          transition={{ repeat: Infinity, duration: 1, delay: i * 0.2 }}
-                          className="w-4 h-4 bg-greek-light-blue rounded-full shadow-[0_0_10px_rgba(225,245,254,0.8)]"
-                        />
-                      ))}
-                    </motion.div>
-                 )}
-               </AnimatePresence>
+            {/* Central Immersive Visualizer */}
+            <div className="flex-grow flex flex-col items-center justify-center gap-8 z-10 w-full max-w-2xl text-center">
+               <div className="relative">
+                  <AnimatePresence mode="wait">
+                    {isSpeaking && (
+                      <motion.div 
+                        key="speaking"
+                        initial={{ scale: 0.8, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        exit={{ scale: 0.8, opacity: 0 }}
+                        className="flex gap-2 h-24 items-center"
+                      >
+                         {[1, 2, 3, 4, 5, 6, 7].map(i => (
+                           <motion.div
+                             key={i}
+                             animate={{ 
+                               height: [20, 80, 40, 90, 30],
+                               backgroundColor: ['#e1f5fe', '#ffffff', '#e1f5fe']
+                             }}
+                             transition={{ repeat: Infinity, duration: 0.4, delay: i * 0.05 }}
+                             className="w-3 rounded-full"
+                           />
+                         ))}
+                      </motion.div>
+                    )}
+                    {isListening && (
+                      <motion.div 
+                        key="listening"
+                        initial={{ scale: 0.8, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        exit={{ scale: 0.8, opacity: 0 }}
+                        className="relative w-32 h-32 flex items-center justify-center"
+                      >
+                         <motion.div
+                           animate={{ scale: [1, 1.5, 1], opacity: [0.5, 0.1, 0.5] }}
+                           transition={{ repeat: Infinity, duration: 1.5 }}
+                           className="absolute inset-0 bg-white/20 rounded-full"
+                         />
+                         <div className="w-4 h-4 bg-white rounded-full animate-ping" />
+                      </motion.div>
+                    )}
+                    {!isSpeaking && !isListening && !isLoading && (
+                       <motion.div 
+                         key="idle"
+                         initial={{ scale: 0.8, opacity: 0 }}
+                         animate={{ scale: 1, opacity: 1 }}
+                         className="flex items-center gap-1"
+                       >
+                         {[1, 2, 3].map(i => (
+                           <motion.div
+                             key={i}
+                             animate={{ scale: [1, 1.2, 1] }}
+                             transition={{ repeat: Infinity, duration: 2, delay: i * 0.3 }}
+                             className="w-2 h-2 bg-greek-light-blue rounded-full opacity-40"
+                           />
+                         ))}
+                       </motion.div>
+                    )}
+                  </AnimatePresence>
+               </div>
 
-               {!isListening && !isSpeaking && !isLoading && (
-                 <motion.p 
-                   initial={{ opacity: 0 }}
-                   animate={{ opacity: 1 }}
-                   className="text-white text-lg font-medium tracking-wide animate-pulse"
+               <div className="space-y-4">
+                 <motion.h2 
+                   key={statusText}
+                   initial={{ y: 10, opacity: 0 }}
+                   animate={{ y: 0, opacity: 1 }}
+                   className="text-2xl md:text-3xl font-serif font-bold leading-tight px-4"
                  >
-                   تحدث معي الآن..
-                 </motion.p>
-               )}
-
-               {isLoading && (
-                 <div className="flex flex-col items-center gap-2">
-                   <Loader2 size={32} className="animate-spin text-white" />
-                   <p className="text-white/60 text-xs">جاري تحضير الرد...</p>
-                 </div>
-               )}
+                   {statusText}
+                 </motion.h2>
+                 
+                 <AnimatePresence>
+                   {transcription && (
+                     <motion.p 
+                       initial={{ opacity: 0 }}
+                       animate={{ opacity: 0.6 }}
+                       exit={{ opacity: 0 }}
+                       className="text-lg italic font-light font-sans"
+                     >
+                       "{transcription}..."
+                     </motion.p>
+                   )}
+                 </AnimatePresence>
+               </div>
             </div>
 
-            {/* Transcription Feed (Briefly shows what was heard) */}
-            <div className="px-6 py-4 bg-slate-50 border-b border-slate-100 min-h-[60px] flex items-center justify-center text-center">
-              {transcription ? (
-                <p className="text-slate-500 italic text-lg leading-snug">"{transcription}..."</p>
-              ) : messages[messages.length-1].role === 'model' ? (
-                <div className="flex flex-col items-center gap-2">
-                   <p className="text-greek-blue font-medium text-sm line-clamp-2">{messages[messages.length-1].text}</p>
-                </div>
-              ) : null}
-            </div>
-
-            {/* History Preview (Minimalistic) */}
-            <div className="flex-grow overflow-y-auto p-6 space-y-4 bg-white">
-               {messages.slice(-2).map((m, i) => (
-                <div 
-                  key={i} 
-                  className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}
-                >
-                  <div className={`max-w-[90%] p-4 rounded-3xl shadow-sm border ${
-                    m.role === 'user' 
-                      ? 'bg-slate-50 text-slate-600 border-slate-100 rounded-tr-none' 
-                      : 'bg-greek-blue/5 text-greek-blue border-greek-blue/10 rounded-tl-none font-medium'
-                  }`}>
-                    <p className="text-sm leading-relaxed">{m.text}</p>
-                  </div>
-                </div>
-              ))}
-              <div ref={messagesEndRef} />
-            </div>
-
-            {/* Giant Push-to-Talk Button */}
-            <div className="p-8 pb-10 bg-white border-t border-slate-50 flex flex-col items-center gap-6">
-              <div className="relative">
-                {isListening && (
+            {/* Giant Action Area */}
+            <div className="w-full flex flex-col items-center gap-6 z-10 pb-4">
+               <div className="relative group">
                   <motion.div 
-                    animate={{ scale: [1, 1.5, 1], opacity: [0.3, 0, 0.3] }}
-                    transition={{ repeat: Infinity, duration: 2 }}
-                    className="absolute inset-0 bg-red-400 rounded-full"
+                    animate={isListening ? { scale: [1, 1.3, 1], opacity: [0.3, 0.1, 0.3] } : { scale: 1, opacity: 0 }}
+                    transition={{ repeat: Infinity, duration: 1.5 }}
+                    className="absolute inset-[-20px] bg-white/30 rounded-full blur-xl"
                   />
-                )}
-                <button
-                  onClick={toggleListening}
-                  className={`relative w-24 h-24 rounded-full flex items-center justify-center transition-all duration-300 shadow-2xl active:scale-90 ${
-                    isListening 
-                      ? 'bg-red-500 shadow-red-200' 
-                      : 'bg-greek-blue hover:scale-105 shadow-greek-blue/30'
-                  }`}
-                >
-                  {isListening ? <MicOff size={40} className="text-white" /> : <Mic size={40} className="text-white" />}
-                </button>
-              </div>
-              <div className="text-center">
-                <p className={`text-xl font-bold mb-1 ${isListening ? 'text-red-500' : 'text-greek-blue'}`}>
-                  {isListening ? 'أنا أسمعك.. اضغط للإنهاء' : 'اضغط وتحدث معي'}
-                </p>
-                <p className="text-slate-400 text-xs">سأقوم بالرد عليك صوتياً فوراً</p>
-              </div>
+                  <button
+                    onClick={toggleListening}
+                    disabled={isLoading}
+                    className={`w-28 h-28 rounded-full flex items-center justify-center transition-all duration-300 shadow-[0_15px_40px_rgba(0,0,0,0.3)] hover:scale-105 active:scale-90 ${
+                      isListening 
+                        ? 'bg-red-500 shadow-red-500/40 text-white' 
+                        : 'bg-white text-greek-blue'
+                    } ${isLoading ? 'opacity-50 grayscale' : ''}`}
+                  >
+                    {isLoading ? (
+                      <Loader2 size={48} className="animate-spin" />
+                    ) : isListening ? (
+                      <MicOff size={48} />
+                    ) : (
+                      <Mic size={48} />
+                    )}
+                  </button>
+               </div>
+               
+               <div className="flex flex-col items-center gap-2">
+                 <p className="text-greek-light-blue text-sm font-bold tracking-widest flex items-center gap-2">
+                   {isListening ? 'أنا أسمعك.. تكلّم' : isSpeaking ? 'جاري الرد..' : 'اضغط واسألني عن المنيو'}
+                   {isListening && <Sparkles size={14} className="animate-pulse" />}
+                 </p>
+                 <div className="h-1 w-32 bg-white/10 rounded-full overflow-hidden">
+                    <motion.div 
+                      animate={isListening ? { x: ['-100%', '100%'] } : { x: '0%' }}
+                      transition={{ repeat: Infinity, duration: 1.5, ease: "linear" }}
+                      className="h-full w-1/2 bg-greek-light-blue"
+                    />
+                 </div>
+               </div>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      <motion.button
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-        onClick={() => {
-          setIsOpen(!isOpen);
-          if (isOpen) {
-             window.speechSynthesis.cancel();
-             recognitionRef.current?.stop();
-          }
-        }}
-        className={`w-20 h-20 rounded-full shadow-2xl flex items-center justify-center relative overflow-hidden group transition-all duration-500 border-4 border-white ${isOpen ? 'bg-red-500 rotate-90' : 'bg-greek-blue border-greek-light-blue/20'}`}
-      >
-        <div className="absolute inset-0 bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
-        {isOpen ? <X size={32} className="text-white" /> : <Mic size={32} className="text-white" />}
-        {!isOpen && (
-          <motion.div 
-            animate={{ scale: [1, 1.2, 1] }} 
-            transition={{ repeat: Infinity, duration: 2 }}
-            className="absolute -top-1 -right-1 w-6 h-6 bg-green-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-white shadow-lg"
+      {/* Primary Landing Launch Button */}
+      {!isOpen && (
+        <motion.div 
+          layoutId="assistant-button"
+          className="mb-8 w-full max-w-sm px-6"
+        >
+          <button
+            onClick={() => {
+              setIsOpen(true);
+              speak('يا هلا بك في نداء! سم يا بعدي.. وش بخاطرك اليوم؟');
+            }}
+            className="w-full bg-greek-blue text-white py-6 rounded-[2rem] shadow-2xl flex items-center justify-center gap-4 group hover:bg-greek-blue/90 transition-all border-4 border-white/50"
           >
-            LIVE
-          </motion.div>
-        )}
-      </motion.button>
+            <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
+               <Mic size={24} />
+            </div>
+            <div className="text-right">
+              <p className="text-xl font-bold">تحدث مع مُساعد نداء</p>
+              <p className="text-xs text-greek-light-blue/60 font-medium">اطلب وسولف معنا بالصوت</p>
+            </div>
+          </button>
+        </motion.div>
+      )}
     </div>
   );
 };
