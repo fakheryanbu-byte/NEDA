@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Utensils, Coffee, Info, MapPin, Phone, Instagram, ChevronRight, Menu as MenuIcon, X, ShoppingCart, Plus, Minus, Trash2, Send, Languages } from 'lucide-react';
 import { MENU_DATA } from './constants';
 import { MenuCategory, CartItem, MenuItem } from './types';
+import { supabase } from './supabase';
 
 const RESTAURANT_PHONE = '966567107510';
 
@@ -101,17 +102,42 @@ export default function App() {
 
   const clearCart = () => setCart([]);
 
-  const sendToWhatsApp = () => {
+  const sendToWhatsApp = async () => {
     if (cart.length === 0) return;
 
+    // 1. Construct the WhatsApp message
     let message = `*${t.orderTitle}*\n\n`;
     cart.forEach(item => {
-      message += `• ${item.name[lang]} (${item.quantity}) - ${item.price * item.quantity} ${t.currency}\n`;
+      message += `• ${item.name[lang]} (${item.quantity}) - ${item.price * item.quantity}${t.currency}\n`;
     });
-    message += `\n*${t.total}: ${cartTotal} ${t.currency}*`;
+    message += `\n*${t.total}: ${cartTotal}${t.currency}*`;
     message += `\n\nThank you for your order!`;
 
     const encodedMessage = encodeURIComponent(message);
+
+    // 2. Save the order to Supabase (Optional/Background)
+    try {
+      const { error } = await supabase
+        .from('orders')
+        .insert([
+          { 
+            items: cart, 
+            total_price: cartTotal, 
+            status: 'pending',
+            language: lang
+          }
+        ]);
+      
+      if (error) {
+        console.error('Error saving order to Supabase:', error.message);
+      } else {
+        console.log('Order saved successfully to Supabase');
+      }
+    } catch (err) {
+      console.error('Unexpected error saving to Supabase:', err);
+    }
+
+    // 3. Open WhatsApp
     window.open(`https://wa.me/${RESTAURANT_PHONE}?text=${encodedMessage}`, '_blank');
   };
 
