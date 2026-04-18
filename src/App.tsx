@@ -313,7 +313,7 @@ export default function App() {
       </AnimatePresence>
 
       {/* Hero Section */}
-      <header className="relative h-[40vh] flex items-center justify-center overflow-hidden bg-greek-blue pt-16">
+      <header className="relative min-h-[50vh] py-20 flex items-center justify-center overflow-hidden bg-greek-blue">
         <div className="absolute inset-0 greek-pattern opacity-20"></div>
         <div className="absolute inset-0 bg-gradient-to-b from-transparent to-greek-blue/30"></div>
         
@@ -326,9 +326,11 @@ export default function App() {
           <h1 className="text-4xl md:text-5xl font-bold text-white mb-2 drop-shadow-lg">
             {t.heroTitle}
           </h1>
-          <p className="text-greek-light-blue text-lg font-light tracking-wide">
+          <p className="text-greek-light-blue text-lg font-light tracking-wide mb-4">
             {t.heroSubtitle}
           </p>
+
+          <AIWaiter />
         </motion.div>
       </header>
 
@@ -451,8 +453,13 @@ export default function App() {
             </a>
           </div>
           
-          <div className="mt-12 pt-8 border-t border-greek-light-blue/10 text-greek-light-blue/50 text-sm">
-            &copy; {new Date().getFullYear()} {t.heroTitle}. {t.rights}
+          <div className="mt-12 pt-8 border-t border-greek-light-blue/10 text-greek-light-blue/50 text-sm flex flex-col md:flex-row justify-between items-center gap-4">
+            <span>&copy; {new Date().getFullYear()} {t.heroTitle}. {t.rights}</span>
+            <div className="flex items-center gap-2 text-greek-light-blue/40 text-xs">
+              <span>تصميم وتنفيذ QUI</span>
+              <span className="opacity-50">|</span>
+              <a href="tel:0540334697" className="hover:text-greek-light-blue transition-colors">0540334697</a>
+            </div>
           </div>
         </div>
       </footer>
@@ -476,8 +483,7 @@ export default function App() {
         </motion.div>
       )}
 
-      {/* AI Marketing Assistant */}
-      <AIWaiter />
+      {/* AI Marketing Assistant - Removed from fixed bottom */}
     </div>
   );
 }

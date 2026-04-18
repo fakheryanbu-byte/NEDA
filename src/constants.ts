@@ -8,124 +8,227 @@ export const MENU_DATA: MenuCategory[] = [
       {
         title: { ar: 'الصواني', en: 'Trays' },
         items: [
-          { name: { ar: 'ترويقة شيف', en: 'Chef\'s Breakfast' }, price: 45 },
-          { name: { ar: 'فطور نداء', en: 'Neda Breakfast' }, price: 75 },
+          { 
+            name: { ar: 'فطور نداء', en: 'Neda Breakfast' }, 
+            price: 75,
+            description: { ar: 'فول مبخر ,معصوب , حمسة باذنجان , فلافل , مسبحة , قلاية بندورة', en: 'Smoked foul, Masoub, Eggplant hamsa, Falafel, Musabbaha, Tomato fry' },
+            calories: 100
+          },
+          { 
+            name: { ar: 'ترويقة الشيف', en: 'Chef\'s Tarweeqa' }, 
+            price: 62,
+            description: { ar: 'لبنة بالرمان, جبنة بالخلطة , حمسة حلوم, مش حجازي', en: 'Labneh with pomegranate, Mixed cheese, Halloumi hamsa, Hijazi Mish' },
+            calories: 291
+          },
           { name: { ar: 'صبوح صنعاني', en: 'Sana\'ani Breakfast' }, price: 85 },
         ],
       },
       {
         title: { ar: 'أطباق البيض', en: 'Egg Dishes' },
         items: [
-          { name: { ar: 'اومليت اسبانيول', en: 'Spanish Omelette' }, price: 26 },
-          { name: { ar: 'اومليت مشروم', en: 'Mushroom Omelette' }, price: 28 },
-          { name: { ar: 'تشيز اومليت', en: 'Cheese Omelette' }, price: 26 },
-          { name: { ar: 'تتريب', en: 'Tatreeb' }, price: 24 },
-          { name: { ar: 'شكشوكة', en: 'Shakshuka' }, price: 15 },
-          { name: { ar: 'لحسة بيض بالجبن', en: 'Lahsa Egg with Cheese' }, price: 17 },
+          { 
+            name: { ar: 'أومليت اسبانيول', en: 'Spanish Omelette' }, 
+            price: 28,
+            description: { ar: 'بيض مقلي بالخضار', en: 'Fried eggs with vegetables' },
+            calories: 330
+          },
+          { 
+            name: { ar: 'أومليت ماشروم', en: 'Mushroom Omelette' }, 
+            price: 28,
+            description: { ar: 'بيض مقلي مع الفطر', en: 'Fried eggs with mushroom' },
+            calories: 475
+          },
+          { 
+            name: { ar: 'تشيز أومليت', en: 'Cheese Omelette' }, 
+            price: 28,
+            description: { ar: 'بيض مقلي مع جبنة البارميزان و الموزوريلا', en: 'Fried eggs with Parmesan and Mozzarella cheese' },
+            calories: 540
+          },
+          { 
+            name: { ar: 'شكشكوكة', en: 'Shakshuka' }, 
+            price: 20,
+            description: { ar: 'البيض المحضر مع الخضروات الطازجة', en: 'Eggs prepared with fresh vegetables' }
+          },
+          { 
+            name: { ar: 'بيض بندكت بالشمندر', en: 'Beetroot Eggs Benedict' }, 
+            price: 35,
+            description: { ar: 'بيض بنديكت مع البنجر بلمسة فريدة ولمذاق غني', en: 'Eggs Benedict with beets for a unique and rich flavor' }
+          },
+          { 
+            name: { ar: 'تتريب', en: 'Tatreeb' }, 
+            price: 25,
+            description: { ar: 'بيض تركي بخلطة اللبن على طريقتنا الخاصة', en: 'Turkish eggs with yogurt mix in our special way' }
+          },
         ],
       },
       {
-        title: { ar: 'أوبن فيس ساندويتش', en: 'Open Face Sandwich' },
+        title: { ar: 'ساندويتشات الصباح', en: 'Morning Sandwiches' },
         items: [
-          { name: { ar: 'بندكت مع الشمندر والافوكادو', en: 'Benedict with Beetroot & Avocado' }, price: 32 },
-          { name: { ar: 'سكرمبل ايق مع سوردو', en: 'Scrambled Egg with Sourdough' }, price: 22 },
-          { name: { ar: 'شكشوكة مع سوردو', en: 'Shakshuka with Sourdough' }, price: 25 },
+          { 
+            name: { ar: 'كروك مدام', en: 'Croque Madame' }, 
+            price: 32,
+            description: { ar: 'كروك مادام بلمسة فرنسية بطعم لذيذ', en: 'Croque Madame with a French touch and delicious taste' },
+            calories: 545
+          },
+          { 
+            name: { ar: 'كلوب ساندويتش', en: 'Club Sandwich' }, 
+            price: 28,
+            description: { ar: 'ساندويش كلوب مع مكونات متنوعة مثل اللحم والخضروات والصلصات', en: 'Club sandwich with various ingredients like meat, vegetables, and sauces' },
+            calories: 625
+          },
+          { 
+            name: { ar: 'شباتي بالجبنة', en: 'Chapati with Cheese' }, 
+            price: 11,
+            description: { ar: 'خبز طازج محضر من الدقيق و السمن بطعم لذيذ وشهي', en: 'Fresh bread made from flour and ghee, delicious and tasty' },
+            calories: 195
+          },
+          { 
+            name: { ar: 'شباتي بالبيض و الجبن', en: 'Chapati with Egg & Cheese' }, 
+            price: 13,
+            description: { ar: 'خبز طازج محضر من الدقيق و السمن بطعم لذيذ وشهي', en: 'Fresh bread made from flour and ghee, delicious and tasty' },
+            calories: 271
+          },
+          { 
+            name: { ar: 'اربيان كاساديا', en: 'Arabian Quesadilla' }, 
+            price: 32,
+            description: { ar: 'سندويتش كاساديا إفطار غني بحشوة الجبن والدجاج', en: 'Breakfast quesadilla sandwich rich with cheese and chicken filling' }
+          },
         ],
       },
       {
-        title: { ar: 'ساندويش الصباح', en: 'Morning Sandwiches' },
+        title: { ar: 'البيتزا', en: 'Pizza' },
         items: [
-          { name: { ar: 'كروك مدام', en: 'Croque Madame' }, price: 32 },
-          { name: { ar: 'شبات بالجبن', en: 'Chapati with Cheese' }, price: 9 },
-          { name: { ar: 'كلوب ساندوتش', en: 'Club Sandwich' }, price: 25 },
-          { name: { ar: 'شباتي بالجبن والبيض', en: 'Chapati with Cheese & Egg' }, price: 11 },
-          { name: { ar: 'كاساديا عربية', en: 'Arabic Quesadilla' }, price: 28 },
+          { 
+            name: { ar: 'البيتزا', en: 'Pizza' }, 
+            price: 25,
+            description: { ar: 'عجينة بيتزا ساخنة', en: 'Hot pizza dough' },
+            calories: 170
+          },
         ],
       },
       {
         title: { ar: 'تاكو ميكس', en: 'Taco Mix' },
         items: [
-          { name: { ar: 'تاكو فلافل', en: 'Falafel Taco' }, price: 26 },
-          { name: { ar: 'تاكو حلوم', en: 'Halloumi Taco' }, price: 28 },
-          { name: { ar: 'تاكو كبدة', en: 'Liver Taco' }, price: 28 },
-          { name: { ar: 'تاكو باذنجان', en: 'Eggplant Taco' }, price: 22 },
+          { 
+            name: { ar: 'تاكو فلافل', en: 'Falafel Taco' }, 
+            price: 28,
+            description: { ar: '4 قطع من التاكو', en: '4 pieces of taco' },
+            calories: 365
+          },
+          { 
+            name: { ar: 'تاكو حلومي', en: 'Halloumi Taco' }, 
+            price: 28,
+            description: { ar: '4 قطع من التاكو', en: '4 pieces of taco' },
+            calories: 270
+          },
+          { 
+            name: { ar: 'تاكو كبدة', en: 'Liver Taco' }, 
+            price: 28,
+            description: { ar: '4 قطع من التاكو', en: '4 pieces of taco' },
+            calories: 320
+          },
+          { 
+            name: { ar: 'تاكو باذنجان', en: 'Eggplant Taco' }, 
+            price: 28,
+            description: { ar: '4 قطع من التاكو', en: '4 pieces of taco' },
+            calories: 220
+          },
         ],
       },
       {
-        title: { ar: 'أطباق فطور جانبية', en: 'Side Breakfast Dishes' },
+        title: { ar: 'أطباق الفطور', en: 'Breakfast Dishes' },
         items: [
-          { name: { ar: 'عدس مع شباتي', en: 'Lentils with Chapati' }, price: 15 },
-          { name: { ar: 'فول مبخر', en: 'Smoked Foul' }, price: 15 },
-          { name: { ar: 'فول صنعاني', en: 'Sana\'ani Foul' }, price: 15 },
-          { name: { ar: 'حمسة باذنجان', en: 'Eggplant Hamsa' }, price: 17 },
-          { name: { ar: 'طبق فلافل', en: 'Falafel Plate' }, price: 15 },
-          { name: { ar: 'معصوب', en: 'Masoub' }, price: 15 },
-          { name: { ar: 'عريكة', en: 'Areeka' }, price: 25 },
-          { name: { ar: 'مسبحة', en: 'Musabbaha' }, price: 15 },
-          { name: { ar: 'كبدة إسكندراني', en: 'Alexandrian Liver' }, price: 22 },
-          { name: { ar: 'كبدة بالرمان', en: 'Liver with Pomegranate' }, price: 24 },
-          { name: { ar: 'كبدة صنعاني', en: 'Sana\'ani Liver' }, price: 25 },
-        ],
-      },
-      {
-        title: { ar: 'من الفرن', en: 'From the Oven' },
-        items: [
-          { name: { ar: 'بيتزا بالخضار', en: 'Vegetable Pizza' }, price: 25 },
-          { name: { ar: 'فطيرة جبن موتزاريلا', en: 'Mozzarella Cheese Pie' }, price: 15 },
-          { name: { ar: 'فطيرة جبن بالزعتر', en: 'Cheese & Zaatar Pie' }, price: 16 },
-          { name: { ar: 'فطيرة لبنه', en: 'Labneh Pie' }, price: 15 },
-          { name: { ar: 'فطيرة لبنه وزعتر', en: 'Labneh & Zaatar Pie' }, price: 16 },
-          { name: { ar: 'فطيرة زعتر', en: 'Zaatar Pie' }, price: 14 },
-          { name: { ar: 'فطيرة جبنة كاسات', en: 'Cream Cheese Pie' }, price: 14 },
-          { name: { ar: 'فطيرة لبنة بالعسل', en: 'Labneh & Honey Pie' }, price: 15 },
-          { name: { ar: 'فطيرة لبنة وزيتون', en: 'Labneh & Olives Pie' }, price: 15 },
-          { name: { ar: 'خاشتبوري', en: 'Khachapuri' }, price: 15 },
-          { name: { ar: 'بيتزا الفلافل', en: 'Falafel Pizza' }, price: 22 },
+          { 
+            name: { ar: 'فول مبخر', en: 'Smoked Foul' }, 
+            price: 15,
+            description: { ar: 'فول مطبوخ على الطريقة التقليدية', en: 'Foul cooked in the traditional way' },
+            calories: 530
+          },
+          { 
+            name: { ar: 'معصوب نداء', en: 'Neda Masoub' }, 
+            price: 16,
+            description: { ar: 'أكلة شعبية محضرة من الخبز المفروم مع السمن', en: 'Traditional dish made from minced bread with ghee' },
+            calories: 730
+          },
+          { 
+            name: { ar: 'حمسة باذنجان', en: 'Eggplant Hamsa' }, 
+            price: 15,
+            description: { ar: 'صحن الباذنجان المحموس', en: 'Roasted eggplant plate' },
+            calories: 425
+          },
+          { 
+            name: { ar: 'فلافل', en: 'Falafel' }, 
+            price: 15,
+            description: { ar: 'ساندوتش فلافل شهية بطريقتنا الخاصة', en: 'Delicious falafel sandwich in our special way' },
+            calories: 550
+          },
+          { 
+            name: { ar: 'كبدة سكندراني', en: 'Alexandrian Liver' }, 
+            price: 24,
+            description: { ar: 'قطع الكبدة المطبوخة مع التتبيلة الخاصة', en: 'Liver pieces cooked with special seasoning' },
+            calories: 410
+          },
+          { 
+            name: { ar: 'كبدة بالرمان', en: 'Liver with Pomegranate' }, 
+            price: 24,
+            description: { ar: 'كبدة مطبوخه مع الخضار الطازجة', en: 'Liver cooked with fresh vegetables' },
+            calories: 435
+          },
         ],
       },
       {
         title: { ar: 'أجبان', en: 'Cheeses' },
         items: [
-          { name: { ar: 'سحاوق جبن', en: 'Cheese Sahawiq' }, price: 15 },
-          { name: { ar: 'حمسة حلوم', en: 'Halloumi Hamsa' }, price: 25 },
-          { name: { ar: 'مش حجازي', en: 'Hijazi Mish' }, price: 25 },
-          { name: { ar: 'جبة بخلطة خاصة', en: 'Special Mix Cheese' }, price: 25 },
-          { name: { ar: 'لبنة بالرمان', en: 'Labneh with Pomegranate' }, price: 25 },
+          { 
+            name: { ar: 'حمسة حلوم', en: 'Halloumi Hamsa' }, 
+            price: 26,
+            description: { ar: 'ساندوتش جبن الحلوم بطريقتنا الخاصة', en: 'Halloumi cheese sandwich in our special way' },
+            calories: 398
+          },
         ],
       },
       {
-        title: { ar: 'إضافات', en: 'Add-ons' },
+        title: { ar: 'فطائر', en: 'Pies' },
         items: [
-          { name: { ar: 'هاش براون', en: 'Hash Brown' }, price: 12 },
-          { name: { ar: 'خبز', en: 'Bread' }, price: 7 },
-          { name: { ar: 'فتوت', en: 'Fatout' }, price: 6 },
-          { name: { ar: 'بطاطس مقلية', en: 'French Fries' }, price: 10 },
-        ],
-      },
-      {
-        title: { ar: 'حلويات', en: 'Sweets' },
-        items: [
-          { name: { ar: 'بان كيك', en: 'Pancake' }, price: 25 },
-          { name: { ar: 'فرينش توست بروليه', en: 'French Toast Brulee' }, price: 25 },
-          { name: { ar: 'فرين توست ملفيه', en: 'French Toast Mille-feuille' }, price: 25 },
-        ],
-      },
-      {
-        title: { ar: 'مشروبات باردة', en: 'Cold Drinks' },
-        items: [
-          { name: { ar: 'عصير برتقال', en: 'Orange Juice' }, price: 18 },
-          { name: { ar: 'مشروب غازي', en: 'Soft Drink' }, price: 5 },
-          { name: { ar: 'مياه', en: 'Water' }, price: 2 },
+          { 
+            name: { ar: 'خاشتبوري', en: 'Khachapuri' }, 
+            price: 17,
+            description: { ar: 'خاشتبوري خبز جورجي بالجبنة طازج وشهي جداً', en: 'Khachapuri Georgian cheese bread, fresh and very delicious' }
+          },
+          { 
+            name: { ar: 'منقوشة لبنة بالزيتون', en: 'Labneh & Olives Manakish' }, 
+            price: 14,
+            description: { ar: 'منقوشة مع لبنة وزيتون طازج وشهي', en: 'Manakish with fresh and delicious labneh and olives' },
+            calories: 240
+          },
         ],
       },
       {
         title: { ar: 'مشروبات ساخنة', en: 'Hot Drinks' },
         items: [
-          { name: { ar: 'كوب عدني', en: 'Adani Cup' }, price: 7 },
-          { name: { ar: 'كوب شاي احمر', en: 'Red Tea Cup' }, price: 5 },
-          { name: { ar: 'براد شاي احمر', en: 'Red Tea Pot' }, price: 10 },
-          { name: { ar: 'براد شاي عدني', en: 'Adani Tea Pot' }, price: 15 },
-          { name: { ar: 'قهوة امريكي', en: 'American Coffee' }, price: 8 },
+          { 
+            name: { ar: 'شاي', en: 'Tea' }, 
+            price: 6,
+            description: { ar: 'شاي أحمر ساخن', en: 'Hot red tea' },
+            calories: 3
+          },
+          { 
+            name: { ar: 'عدني', en: 'Adani Tea' }, 
+            price: 9,
+            description: { ar: 'شاي مع اضافة الزعفران والهيل', en: 'Tea with saffron and cardamom' },
+            calories: 38
+          },
+        ],
+      },
+      {
+        title: { ar: 'مشروبات باردة', en: 'Cold Drinks' },
+        items: [
+          { 
+            name: { ar: 'مياه معدنية', en: 'Mineral Water' }, 
+            price: 2,
+            description: { ar: 'مياة معدنية معبأة', en: 'Bottled mineral water' },
+            calories: 1
+          },
         ],
       },
     ],
