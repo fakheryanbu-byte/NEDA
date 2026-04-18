@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Mic, MicOff, X, Volume2, Bot, Loader2, Sparkles } from 'lucide-react';
+import { Mic, MicOff, X, Volume2, Bot, Loader2, Sparkles, Send } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { getAIWaiterResponse } from '../services/aiService';
 
@@ -92,99 +92,105 @@ export const AIWaiter: React.FC = () => {
   };
 
   return (
-    <div className="w-full max-w-xl mx-auto mt-4">
-      <div className="bg-white/5 backdrop-blur-lg rounded-[2.5rem] border border-white/20 p-6 md:p-8 flex flex-col items-center gap-4 shadow-2xl relative overflow-hidden transition-all hover:bg-white/10">
-        {/* Progress bar for listening/speaking */}
-        <div className="absolute top-0 left-0 right-0 h-1 overflow-hidden rounded-t-full">
-           <AnimatePresence>
-             {(isListening || isSpeaking || isLoading) && (
-               <motion.div 
-                 initial={{ width: 0 }}
-                 animate={{ width: "100%" }}
-                 exit={{ opacity: 0 }}
-                 className={`h-full ${isListening ? 'bg-red-500' : 'bg-greek-light-blue'} animate-pulse`}
-               />
-             )}
-           </AnimatePresence>
-        </div>
-
-        <div className="z-10 text-center space-y-2">
-          <div className="flex items-center justify-center gap-3">
+    <div className="w-full max-w-2xl mx-auto mt-6 px-4">
+      {/* The Central "Stage" */}
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="bg-slate-900/40 backdrop-blur-xl rounded-[3rem] p-8 md:p-12 flex flex-col items-center gap-6 shadow-2xl relative border border-white/10"
+      >
+        <button
+          onClick={toggleListening}
+          disabled={isLoading}
+          className={`relative w-24 h-24 rounded-full flex items-center justify-center transition-all duration-300 shadow-2xl ${
+            isListening 
+              ? 'bg-red-500 scale-110 shadow-red-500/40' 
+              : 'bg-white/10 hover:bg-white/20 text-white'
+          } ${isLoading ? 'opacity-50 grayscale' : ''}`}
+        >
+          {isLoading ? (
+            <Loader2 size={40} className="animate-spin" />
+          ) : isListening ? (
+            <MicOff size={40} />
+          ) : (
+            <Mic size={40} />
+          )}
+          
+          {isListening && (
             <motion.div 
-              animate={isSpeaking ? { scale: [1, 1.2, 1] } : {}}
-              transition={{ repeat: Infinity, duration: 1 }}
-              className={`w-10 h-10 rounded-full flex items-center justify-center text-white ${isSpeaking ? 'bg-white/30' : 'bg-white/10'}`}
-            >
-              <Bot size={20} />
-            </motion.div>
-            <h3 className="text-lg font-serif font-bold text-white opacity-80 uppercase tracking-widest text-xs">منادي نداء الذكي</h3>
-          </div>
-          
-          <motion.p 
-            key={statusText}
-            initial={{ y: 5, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            className="text-white text-xl md:text-2xl font-bold px-2 leading-tight drop-shadow-md"
-          >
-            {statusText}
-          </motion.p>
-          
-          <AnimatePresence>
-            {transcription && (
-              <motion.p 
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 0.6 }}
-                exit={{ opacity: 0 }}
-                className="text-greek-light-blue italic text-sm md:text-base font-light"
-              >
-                "{transcription}..."
-              </motion.p>
-            )}
-          </AnimatePresence>
-        </div>
-
-        <div className="z-10 flex flex-col items-center">
-          <button
-            onClick={toggleListening}
-            disabled={isLoading}
-            className={`relative w-20 h-20 rounded-full flex items-center justify-center transition-all duration-300 shadow-xl active:scale-95 ${
-              isListening 
-                ? 'bg-red-500 scale-110' 
-                : 'bg-white text-greek-blue hover:scale-105'
-            } ${isLoading ? 'opacity-50 grayscale' : ''}`}
-          >
-            {isLoading ? (
-              <Loader2 size={32} className="animate-spin" />
-            ) : isListening ? (
-              <MicOff size={32} />
-            ) : (
-              <Mic size={32} />
-            )}
-            
-            {isListening && (
-              <motion.div 
-                animate={{ scale: [1, 1.8], opacity: [0.5, 0] }}
-                transition={{ repeat: Infinity, duration: 1.5 }}
-                className="absolute inset-0 bg-white rounded-full bg-red-400"
-              />
-            )}
-          </button>
-        </div>
-
-        {/* Waves Animation */}
-        <div className="flex items-center gap-0.5 h-4 opacity-50">
-          {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(i => (
-            <motion.div
-              key={i}
-              animate={{ 
-                height: (isListening || isSpeaking) ? [4, 16, 4] : 4,
-                backgroundColor: (isListening || isSpeaking) ? '#fff' : '#ffffff44'
-              }}
-              transition={{ repeat: Infinity, duration: 0.4, delay: i * 0.05 }}
-              className="w-1 rounded-full bg-white/20"
+              animate={{ scale: [1, 1.6], opacity: [0.5, 0] }}
+              transition={{ repeat: Infinity, duration: 1.5 }}
+              className="absolute inset-0 bg-red-400 rounded-full"
             />
-          ))}
+          )}
+        </button>
+
+        <div className="text-center space-y-2 z-10">
+          <h3 className="text-2xl md:text-3xl font-serif font-bold text-white mb-2">المساعد الصوتي الذكي</h3>
+          <p className="text-greek-light-blue/80 text-sm md:text-base font-medium">اضغط هنا للسؤال عن المنيو، السعرات، وخدمات المطعم</p>
         </div>
+
+        <AnimatePresence mode="wait">
+          {(isListening || isSpeaking || isLoading) && (
+            <motion.div 
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              className="w-full flex flex-col items-center gap-4 overflow-hidden"
+            >
+              {/* Waves */}
+              <div className="flex items-center gap-1 h-8">
+                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(i => (
+                  <motion.div
+                    key={i}
+                    animate={{ height: (isListening || isSpeaking) ? [10, 30, 10] : 8 }}
+                    transition={{ repeat: Infinity, duration: 0.5, delay: i * 0.1 }}
+                    className="w-1.5 rounded-full bg-greek-light-blue"
+                  />
+                ))}
+              </div>
+
+              <motion.div 
+                key={statusText}
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="bg-white/10 backdrop-blur-md rounded-2xl p-4 md:p-6 w-full max-w-md border border-white/5"
+              >
+                <p className="text-white text-lg md:text-xl font-medium leading-relaxed drop-shadow-sm">
+                  {statusText}
+                </p>
+                {transcription && (
+                  <p className="text-greek-light-blue/60 italic text-sm mt-2 border-t border-white/5 pt-2">
+                    "{transcription}..."
+                  </p>
+                )}
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.div>
+
+      {/* Action Buttons Below Stage */}
+      <div className="flex flex-wrap justify-center gap-4 mt-8">
+        <button 
+          onClick={() => window.open(`https://wa.me/966567107510`, '_blank')}
+          className="bg-white/10 backdrop-blur-md hover:bg-white/20 text-white px-8 py-4 rounded-3xl flex items-center gap-3 transition-all border border-white/10 font-bold"
+        >
+          <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+             <Send size={16} className="text-white" />
+          </div>
+          <span>واتساب</span>
+        </button>
+
+        <button 
+          onClick={() => window.open('https://maps.app.goo.gl/Kg8S4oPE3GLDMGPSA', '_blank')}
+          className="bg-greek-light-blue text-greek-blue px-8 py-4 rounded-3xl flex items-center gap-3 transition-all font-bold hover:scale-105"
+        >
+          <div className="w-8 h-8 bg-greek-blue rounded-full flex items-center justify-center">
+             <Bot size={16} className="text-white" />
+          </div>
+          <span>الموقع والخدمات</span>
+        </button>
       </div>
     </div>
   );
