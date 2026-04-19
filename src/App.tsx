@@ -151,7 +151,6 @@ export default function App() {
 
     setSelectedSushiItem(null);
     setTempAddons([]);
-    setIsCartOpen(true);
   };
 
   const toggleTempAddon = (addon: any) => {
