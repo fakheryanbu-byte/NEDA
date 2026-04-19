@@ -45,7 +45,7 @@ export const MENU_DATA: MenuCategory[] = [
             calories: 540
           },
           { 
-            name: { ar: 'شكشكوكة', en: 'Shakshuka' }, 
+            name: { ar: 'شكشوكة', en: 'Shakshuka' }, 
             price: 20,
             description: { ar: 'البيض المحضر مع الخضروات الطازجة', en: 'Eggs prepared with fresh vegetables' }
           },
@@ -200,6 +200,12 @@ export const MENU_DATA: MenuCategory[] = [
             price: 14,
             description: { ar: 'منقوشة مع لبنة وزيتون طازج وشهي', en: 'Manakish with fresh and delicious labneh and olives' },
             calories: 240
+          },
+          { 
+            name: { ar: 'جبنة و زعتر', en: 'Cheese & Thyme' }, 
+            price: 15,
+            description: { ar: 'فطيرة محشية بالجبنة مع الزعتر', en: 'Pie stuffed with cheese and thyme' },
+            calories: 220
           },
         ],
       },

@@ -4,7 +4,6 @@ import { Utensils, Coffee, Info, MapPin, Phone, Instagram, ChevronRight, Menu as
 import { MENU_DATA } from './constants';
 import { MenuCategory, CartItem, MenuItem } from './types';
 import { supabase } from './supabase';
-import { AIWaiter } from './components/AIWaiter';
 
 const RESTAURANT_PHONE = '966567107510';
 
@@ -29,6 +28,11 @@ const translations = {
     footerDesc: 'نقدم لكم تجربة فريدة تجمع بين أصالة الفطور الشعبي وحداثة السوشي الياباني، في أجواء مستوحاة من الجمال اليوناني.',
     location: 'المملكة العربية السعودية، مدينة ينبع',
     rights: 'جميع الحقوق محفوظة.',
+    cal: 'سعرة حرارية',
+    addons: 'الإضافات',
+    add: 'إضافة',
+    cancel: 'إلغاء',
+    selectAddons: 'خصص السوشي الخاص بك',
   },
   en: {
     restaurantName: 'Neda',
@@ -48,10 +52,27 @@ const translations = {
     footerDesc: 'We offer a unique experience combining authentic traditional breakfast with modern Japanese sushi, in an atmosphere inspired by Greek beauty.',
     location: 'Saudi Arabia, Yanbu City',
     rights: 'All rights reserved.',
+    cal: 'kcal',
+    addons: 'Add-ons',
+    add: 'Add',
+    cancel: 'Cancel',
+    selectAddons: 'Customize your Sushi',
   }
 };
 
 const GOOGLE_MAPS_URL = 'https://maps.app.goo.gl/Kg8S4oPE3GLDMGPSA';
+const INSTAGRAM_URL = 'https://www.instagram.com/nedabreakfast/';
+
+const SUSHI_ADDONS = [
+  { name: { ar: 'هوت مايو', en: 'Hot Mayo' }, price: 3 },
+  { name: { ar: 'صويا صوص', en: 'Soy Sauce' }, price: 2 },
+  { name: { ar: 'صوص دايناميت', en: 'Dynamite Sauce' }, price: 5 },
+  { name: { ar: 'افوكادو', en: 'Avocado' }, price: 7 },
+  { name: { ar: 'تشيلي اويل', en: 'Chili Oil' }, price: 4 },
+  { name: { ar: 'مخلل زنجبيل', en: 'Ginger Pickles' }, price: 3 },
+  { name: { ar: 'سويد', en: 'Seaweed' }, price: 3 },
+  { name: { ar: 'كيمتشي', en: 'Kimchi' }, price: 4 },
+];
 
 export default function App() {
   const [lang, setLang] = useState<Language>('ar');
@@ -60,6 +81,8 @@ export default function App() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [selectedSushiItem, setSelectedSushiItem] = useState<MenuItem | null>(null);
+  const [tempAddons, setTempAddons] = useState<any[]>([]);
 
   const t = translations[lang];
 
@@ -74,7 +97,11 @@ export default function App() {
   const currentCategory = MENU_DATA.find(cat => cat.id === activeCategory) || MENU_DATA[0];
 
   const cartTotal = useMemo(() => {
-    return cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    return cart.reduce((sum, item) => {
+      const itemBasePrice = item.price;
+      const addonsPrice = item.selectedAddons?.reduce((acc, addon) => acc + addon.price, 0) || 0;
+      return sum + (itemBasePrice + addonsPrice) * item.quantity;
+    }, 0);
   }, [cart]);
 
   const cartCount = useMemo(() => {
@@ -82,22 +109,67 @@ export default function App() {
   }, [cart]);
 
   const addToCart = (item: MenuItem) => {
+    if (activeCategory === 'sushi') {
+      setSelectedSushiItem(item);
+      setTempAddons([]);
+      return;
+    }
+
     setCart(prev => {
-      const existing = prev.find(i => i.name.ar === item.name.ar);
+      const existing = prev.find(i => i.name.ar === item.name.ar && !i.selectedAddons);
       if (existing) {
-        return prev.map(i => i.name.ar === item.name.ar ? { ...i, quantity: i.quantity + 1 } : i);
+        return prev.map(i => i.name.ar === item.name.ar && !i.selectedAddons ? { ...i, quantity: i.quantity + 1 } : i);
       }
       return [...prev, { ...item, quantity: 1 }];
     });
   };
 
-  const removeFromCart = (nameAr: string) => {
+  const confirmSushiAddons = () => {
+    if (!selectedSushiItem) return;
+
     setCart(prev => {
-      const existing = prev.find(i => i.name.ar === nameAr);
-      if (existing && existing.quantity > 1) {
-        return prev.map(i => i.name.ar === nameAr ? { ...i, quantity: i.quantity - 1 } : i);
+      // For items with addons, we treat them as unique entries in the cart if the addon combination is different
+      // But for simplicity, let's just add it as a new entry every time a sushi item is added to cart
+      // or match exact addons.
+      const addonsIds = tempAddons.map(a => a.name.ar).sort().join(',');
+      const existing = prev.find(i => 
+        i.name.ar === selectedSushiItem.name.ar && 
+        (i.selectedAddons?.map(a => a.name.ar).sort().join(',') || '') === addonsIds
+      );
+
+      if (existing) {
+        return prev.map(i => 
+          i.name.ar === selectedSushiItem.name.ar && 
+          (i.selectedAddons?.map(a => a.name.ar).sort().join(',') || '') === addonsIds 
+          ? { ...i, quantity: i.quantity + 1 } 
+          : i
+        );
       }
-      return prev.filter(i => i.name.ar !== nameAr);
+
+      return [...prev, { ...selectedSushiItem, quantity: 1, selectedAddons: [...tempAddons] }];
+    });
+
+    setSelectedSushiItem(null);
+    setTempAddons([]);
+    setIsCartOpen(true);
+  };
+
+  const toggleTempAddon = (addon: any) => {
+    setTempAddons(prev => {
+      if (prev.find(a => a.name.ar === addon.name.ar)) {
+        return prev.filter(a => a.name.ar !== addon.name.ar);
+      }
+      return [...prev, addon];
+    });
+  };
+
+  const removeFromCart = (index: number) => {
+    setCart(prev => {
+      const item = prev[index];
+      if (item && item.quantity > 1) {
+        return prev.map((i, idx) => idx === index ? { ...i, quantity: i.quantity - 1 } : i);
+      }
+      return prev.filter((_, idx) => idx !== index);
     });
   };
 
@@ -106,10 +178,16 @@ export default function App() {
   const sendToWhatsApp = async () => {
     if (cart.length === 0) return;
 
-    // 1. Construct the WhatsApp message
     let message = `*${t.orderTitle}*\n\n`;
     cart.forEach(item => {
-      message += `• ${item.name[lang]} (${item.quantity}) - ${item.price * item.quantity}${t.currency}\n`;
+      const itemBasePrice = item.price;
+      const addonsPrice = item.selectedAddons?.reduce((acc, addon) => acc + addon.price, 0) || 0;
+      const itemTotalPrice = (itemBasePrice + addonsPrice) * item.quantity;
+      
+      message += `• ${item.name[lang]} (${item.quantity}) - ${itemTotalPrice}${t.currency}\n`;
+      if (item.selectedAddons && item.selectedAddons.length > 0) {
+        message += `  _${t.addons}: ${item.selectedAddons.map(a => a.name[lang]).join(', ')}_\n`;
+      }
     });
     message += `\n*${t.total}: ${cartTotal}${t.currency}*`;
     message += `\n\nThank you for your order!`;
@@ -214,9 +292,15 @@ export default function App() {
             </div>
             
             <div className="mt-auto pb-10 flex justify-center gap-6 text-greek-blue">
-              <Instagram size={32} />
-              <Phone size={32} />
-              <MapPin size={32} />
+              <a href={INSTAGRAM_URL} target="_blank" rel="noopener noreferrer">
+                <Instagram size={32} />
+              </a>
+              <a href={`tel:${RESTAURANT_PHONE}`}>
+                <Phone size={32} />
+              </a>
+              <a href={GOOGLE_MAPS_URL} target="_blank" rel="noopener noreferrer">
+                <MapPin size={32} />
+              </a>
             </div>
           </motion.div>
         )}
@@ -264,23 +348,45 @@ export default function App() {
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    {cart.map((item) => (
-                      <div key={item.name.ar} className="flex justify-between items-center bg-white p-3 rounded-xl shadow-sm border border-greek-light-blue/30">
-                        <div className="flex-grow">
-                          <h3 className="font-bold text-slate-800">{item.name[lang]}</h3>
-                          <p className="text-greek-blue font-bold text-sm">{item.price * item.quantity}{t.currency}</p>
+                    {cart.map((item, index) => {
+                      const itemBasePrice = item.price;
+                      const addonsPrice = item.selectedAddons?.reduce((acc, addon) => acc + addon.price, 0) || 0;
+                      const itemTotalPrice = (itemBasePrice + addonsPrice) * item.quantity;
+
+                      return (
+                        <div key={index} className="flex flex-col bg-white p-3 rounded-xl shadow-sm border border-greek-light-blue/30">
+                          <div className="flex justify-between items-center">
+                            <div className="flex-grow">
+                              <h3 className="font-bold text-slate-800">{item.name[lang]}</h3>
+                              <p className="text-greek-blue font-bold text-sm">{itemTotalPrice}{t.currency}</p>
+                            </div>
+                            <div className="flex items-center gap-3 bg-greek-light-blue/30 rounded-full px-2 py-1">
+                              <button onClick={() => removeFromCart(index)} className="text-greek-blue p-1">
+                                <Minus size={16} />
+                              </button>
+                              <span className="font-bold text-greek-blue min-w-[20px] text-center">{item.quantity}</span>
+                              <button onClick={() => {
+                                // For standard items (no addons), we can just increment
+                                // For sushi items, we might want to prompt for addons again or just increment current config
+                                // Let's just increment current config for simplicity in the cart
+                                setCart(prev => prev.map((i, idx) => idx === index ? { ...i, quantity: i.quantity + 1 } : i));
+                              }} className="text-greek-blue p-1">
+                                <Plus size={16} />
+                              </button>
+                            </div>
+                          </div>
+                          {item.selectedAddons && item.selectedAddons.length > 0 && (
+                            <div className="mt-2 flex flex-wrap gap-1">
+                              {item.selectedAddons.map((addon, aIdx) => (
+                                <span key={aIdx} className="text-[10px] bg-slate-100 text-slate-500 px-2 py-0.5 rounded-md">
+                                  {addon.name[lang]} (+{addon.price})
+                                </span>
+                              ))}
+                            </div>
+                          )}
                         </div>
-                        <div className="flex items-center gap-3 bg-greek-light-blue/30 rounded-full px-2 py-1">
-                          <button onClick={() => removeFromCart(item.name.ar)} className="text-greek-blue p-1">
-                            <Minus size={16} />
-                          </button>
-                          <span className="font-bold text-greek-blue min-w-[20px] text-center">{item.quantity}</span>
-                          <button onClick={() => addToCart(item)} className="text-greek-blue p-1">
-                            <Plus size={16} />
-                          </button>
-                        </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
               </div>
@@ -312,8 +418,80 @@ export default function App() {
         )}
       </AnimatePresence>
 
+      {/* Sushi Addons Modal */}
+      <AnimatePresence>
+        {selectedSushiItem && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setSelectedSushiItem(null)}
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="relative bg-white w-full max-w-sm rounded-[2rem] shadow-2xl overflow-hidden flex flex-col max-h-[80vh]"
+            >
+              <div className="p-6 bg-greek-blue text-white text-center">
+                <h2 className="text-xl font-bold mb-1">{t.selectAddons}</h2>
+                <p className="text-greek-light-blue text-sm">{selectedSushiItem.name[lang]}</p>
+              </div>
+              
+              <div className="flex-grow overflow-y-auto p-6">
+                <div className="grid grid-cols-1 gap-3">
+                  {SUSHI_ADDONS.map((addon, idx) => {
+                    const isSelected = !!tempAddons.find(a => a.name.ar === addon.name.ar);
+                    return (
+                      <button
+                        key={idx}
+                        onClick={() => toggleTempAddon(addon)}
+                        className={`flex justify-between items-center p-4 rounded-2xl border-2 transition-all ${
+                          isSelected 
+                            ? 'border-greek-blue bg-greek-blue/5 text-greek-blue shadow-md' 
+                            : 'border-slate-100 hover:border-greek-light-blue text-slate-600'
+                        }`}
+                      >
+                        <span className="font-bold">{addon.name[lang]}</span>
+                        <div className="flex items-center gap-3">
+                          <span className={`${isSelected ? 'text-greek-blue' : 'text-slate-400'} font-bold`}>
+                            +{addon.price}{t.currency}
+                          </span>
+                          <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
+                            isSelected ? 'bg-greek-blue border-greek-blue' : 'border-slate-200'
+                          }`}>
+                            {isSelected && <Plus size={14} className="text-white" />}
+                          </div>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="p-6 bg-slate-50 border-t border-slate-100 flex gap-4">
+                <button 
+                  onClick={() => setSelectedSushiItem(null)}
+                  className="flex-1 py-4 text-slate-500 font-bold hover:bg-slate-100 rounded-2xl transition-colors"
+                >
+                  {t.cancel}
+                </button>
+                <button 
+                  onClick={confirmSushiAddons}
+                  className="flex-[2] bg-greek-blue text-white py-4 rounded-2xl font-bold shadow-lg shadow-greek-blue/20 active:scale-95 transition-transform"
+                >
+                  {t.add}
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
       {/* Hero Section */}
-      <header className="relative min-h-[50vh] py-20 flex items-center justify-center overflow-hidden bg-greek-blue">
+      <header className="relative h-[40vh] flex items-center justify-center overflow-hidden bg-greek-blue pt-16">
         <div className="absolute inset-0 greek-pattern opacity-20"></div>
         <div className="absolute inset-0 bg-gradient-to-b from-transparent to-greek-blue/30"></div>
         
@@ -326,11 +504,9 @@ export default function App() {
           <h1 className="text-4xl md:text-5xl font-bold text-white mb-2 drop-shadow-lg">
             {t.heroTitle}
           </h1>
-          <p className="text-greek-light-blue text-lg font-light tracking-wide mb-4">
+          <p className="text-greek-light-blue text-lg font-light tracking-wide">
             {t.heroSubtitle}
           </p>
-
-          <AIWaiter />
         </motion.div>
       </header>
 
@@ -400,6 +576,12 @@ export default function App() {
                           {item.description[lang]}
                         </p>
                       )}
+                      {item.calories && (
+                        <span className="text-[10px] md:text-xs font-medium text-orange-500/80 mt-1 flex items-center gap-1">
+                          <span className="w-1 h-1 rounded-full bg-orange-400"></span>
+                          {item.calories} {t.cal}
+                        </span>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -445,7 +627,12 @@ export default function App() {
             >
               <MapPin size={24} />
             </a>
-            <a href="#" className="w-12 h-12 rounded-full border border-greek-light-blue/30 flex items-center justify-center hover:bg-white hover:text-greek-blue transition-colors">
+            <a 
+              href={INSTAGRAM_URL} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="w-12 h-12 rounded-full border border-greek-light-blue/30 flex items-center justify-center hover:bg-white hover:text-greek-blue transition-colors"
+            >
               <Instagram size={24} />
             </a>
             <a href="tel:0567107510" className="w-12 h-12 rounded-full border border-greek-light-blue/30 flex items-center justify-center hover:bg-white hover:text-greek-blue transition-colors">
@@ -453,11 +640,13 @@ export default function App() {
             </a>
           </div>
           
-          <div className="mt-12 pt-8 border-t border-greek-light-blue/10 text-greek-light-blue/50 text-sm flex flex-col md:flex-row justify-between items-center gap-4">
-            <span>&copy; {new Date().getFullYear()} {t.heroTitle}. {t.rights}</span>
-            <div className="flex items-center gap-2 text-greek-light-blue/40 text-xs">
+          <div className="mt-12 pt-8 border-t border-greek-light-blue/10 flex flex-col items-center gap-4">
+            <div className="text-greek-light-blue/50 text-sm">
+              &copy; {new Date().getFullYear()} {t.heroTitle}. {t.rights}
+            </div>
+            <div className="text-white font-bold text-lg md:text-xl tracking-wide flex items-center gap-2">
               <span>تصميم وتنفيذ QUI</span>
-              <span className="opacity-50">|</span>
+              <span className="opacity-40">|</span>
               <a href="tel:0540334697" className="hover:text-greek-light-blue transition-colors">0540334697</a>
             </div>
           </div>

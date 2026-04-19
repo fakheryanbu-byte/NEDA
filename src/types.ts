@@ -1,3 +1,8 @@
+export interface Addon {
+  name: { ar: string; en: string };
+  price: number;
+}
+
 export interface MenuItem {
   name: { ar: string; en: string };
   price: number;
@@ -18,4 +23,5 @@ export interface MenuCategory {
 
 export interface CartItem extends MenuItem {
   quantity: number;
+  selectedAddons?: Addon[];
 }
